@@ -1,6 +1,6 @@
 {
   "productConfiguration": {
-    "nameShort": "voce",
+    "nameShort": "code",
     "nameLong": "Visual Studio Code",
     "applicationName": "code-web-sample",
     "dataFolderName": ".vscode-web-sample",
