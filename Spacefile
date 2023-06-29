@@ -1,0 +1,10 @@
+# Spacefile Docs: https://go.deta.dev/docs/spacefile/v0
+v: 0
+micros:
+  - name: vscode
+    src: vscode
+    engine: static
+    serve: .
+    commands:
+      - chmod +x build.sh
+      - ./build.sh

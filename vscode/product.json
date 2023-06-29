@@ -1,0 +1,29 @@
+{
+  "productConfiguration": {
+    "nameShort": "voce",
+    "nameLong": "Visual Studio Code",
+    "applicationName": "code-web-sample",
+    "dataFolderName": ".vscode-web-sample",
+    "extensionsGallery": {
+      "serviceUrl": "https://open-vsx.org/vscode/gallery",
+      "itemUrl": "https://open-vsx.org/vscode/item",
+      "resourceUrlTemplate": "https://openvsxorg.blob.core.windows.net/resources/{publisher}/{name}/{version}/{path}"
+    },
+    "extensionEnabledApiProposals": {
+      "vscode.vscode-web-playground": [
+        "fileSearchProvider",
+        "textSearchProvider"
+      ]
+    }
+  },
+  "folderUri": {
+    "scheme": "memfs",
+    "path": "/sample-folder"
+  },
+  "additionalBuiltinExtensions": [
+    {
+      "scheme": "https",
+      "path": "extensions/vscode-web-playground"
+    }
+  ]
+}
