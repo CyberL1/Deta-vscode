@@ -49,23 +49,3 @@ if [ -z $DETA_SPACE ]; then
   echo Splitting workbech file into smaller parts...
   split -b 4MB -d dist/out/vs/workbench/workbench.web.main.js dist/out/vs/workbench/workbench.web.main.js.part
 fi
-
-if [ -d extensions ]; then
-  echo Extensions directory found, compiling all extensions...
-  cd extensions
-
-  find * -prune -type d -exec bash -c ' \
-    echo Compiling {}...
-    cd {}
-    yarn
-    yarn run compile-web
-    cd ..
-  ' \;
-  else
-    echo Extensions directory not found, skipping...
-fi
-
-if [ $DETA_SPACE ]; then
-  echo Cleaning...
-  rm -rf extensions
-fi

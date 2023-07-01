@@ -3,6 +3,12 @@ v: 0
 micros:
   - name: vscode
     src: vscode
+    primary: true
+    engine: static
+    serve: .
+  - name: Extensions
+    src: extensions
+    path: /extensions
     engine: static
     serve: .
     commands:

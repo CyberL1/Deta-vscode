@@ -1,3 +1,4 @@
-!dist
+!vscode/dist
 vscode/vscode
 vscode/workbench.ts
+vscode/build.sh
