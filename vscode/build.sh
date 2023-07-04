@@ -21,7 +21,7 @@ if [ -z $DETA_SPACE ]; then
     echo vscode source code found, do you want to reclone?
     select yn in "Yes" "No"; do
       case $yn in
-        Yes) rm -rfv vscode; git clone $VSCODE_REPO -b $VSCODE_VERSION;;
+        Yes) rm -rfv vscode; git clone $VSCODE_REPO -b $VSCODE_VERSION; break;;
         No) break;;
       esac
     done
