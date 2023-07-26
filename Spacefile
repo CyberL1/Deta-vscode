@@ -14,3 +14,8 @@ micros:
     commands:
       - chmod +x build.sh
       - ./build.sh
+  - name: Terminal
+    src: terminal
+    path: /terminal
+    engine: nodejs16
+    dev: npm start

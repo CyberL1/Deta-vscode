@@ -18,6 +18,17 @@
         "command": "detafs.setDetaKey",
         "title": "Set deta key",
         "category": "detafs"
+      },
+      {
+        "command": "detafs.createTerminal",
+        "title": "Create a new deta terminal session",
+        "category": "Terminal"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "terminal",
+        "contents": "[Create deta terminal](command:detafs.createTerminal)"
       }
     ],
     "configuration": {

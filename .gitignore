@@ -1,3 +1,4 @@
 .space
 vscode/vscode
 vscode/dist
+node_modules
