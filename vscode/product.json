@@ -16,7 +16,7 @@
   },
   "additionalBuiltinExtensions": [
     {
-      "scheme": "http",
+      "scheme": "https",
       "path": "extensions/detafs"
     }
   ]
