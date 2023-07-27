@@ -39,7 +39,7 @@ vscode.commands.registerCommand(
             }
             break;
           case "\r": // Enter
-            const result = await (await fetch("/terminal/send", {
+            const result = await (await fetch("/terminal", {
               method: "POST",
               // eslint-disable-next-line @typescript-eslint/naming-convention
               headers: { "Content-Type": "application/json" },

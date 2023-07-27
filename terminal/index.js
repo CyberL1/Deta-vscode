@@ -5,11 +5,7 @@ const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.json("Terminal frontend on separate page cause why not lol");
-});
-
-app.post("/send", (req, res) => {
+app.post("/", (req, res) => {
   const command = req.body.line.join("");
 
   if (!command) return res.json("");
