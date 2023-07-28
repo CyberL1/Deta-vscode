@@ -12,7 +12,7 @@
   },
   "folderUri": {
     "scheme": "detafs",
-    "path": "/base"
+    "path": "/"
   },
   "additionalBuiltinExtensions": [
     {

@@ -6,7 +6,7 @@ vscode.commands.registerCommand(
   "detafs.createTerminal",
   async () => {
     let line: string[] = [];
-    let cwd: string = "/base";
+    let cwd: string = "/";
     let cursor: number = 0;
     let prompt: string = `\x1b[1;34m${cwd}\x1b[0m $ `;
 

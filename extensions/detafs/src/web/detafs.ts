@@ -50,13 +50,11 @@ export class DetaFS implements vscode.FileSystemProvider {
   base = this.deta.Base("files");
 
   async init() {
-    this.createDirectory(vscode.Uri.parse("detafs:/base"));
-
     const { items: files } = await this.base.fetch();
 
     files.map((file) => {
       vscode.workspace.fs.writeFile(
-        vscode.Uri.parse(`detafs:/base/${file.path}`),
+        vscode.Uri.parse(`detafs:/${file.path}`),
         textEncoder.encode(file.data?.toString()),
       );
     });
@@ -115,7 +113,7 @@ export class DetaFS implements vscode.FileSystemProvider {
     entry.size = content.byteLength;
     entry.data = content;
 
-    const filePath = uri.path.split("/").slice(2).join("/");
+    const filePath = uri.path.split("/").slice(1).join("/");
     const files = await this.base.fetch({ "path": filePath }, { limit: 1 });
     const key = files.items[0]?.key;
 
@@ -160,8 +158,8 @@ export class DetaFS implements vscode.FileSystemProvider {
     entry.name = newName;
     newParent.entries.set(newName, entry);
 
-    const oldPath = oldUri.path.split("/").slice(2).join("/");
-    const newPath = newUri.path.split("/").slice(2).join("/");
+    const oldPath = oldUri.path.split("/").slice(1).join("/");
+    const newPath = newUri.path.split("/").slice(1).join("/");
 
     const { items } = await this.base.fetch({ path: oldPath }, { limit: 1 });
     const key = items[0]?.key;
@@ -189,7 +187,7 @@ export class DetaFS implements vscode.FileSystemProvider {
     parent.mtime = Date.now();
     parent.size -= 1;
 
-    const filePath = uri.path.split("/").slice(2).join("/");
+    const filePath = uri.path.split("/").slice(1).join("/");
 
     if (filePath.includes("/")) {
       // eslint-disable-next-line @typescript-eslint/naming-convention
