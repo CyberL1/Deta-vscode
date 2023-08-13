@@ -47,16 +47,22 @@ const textDecoder = new TextDecoder();
 export class DetaFS implements vscode.FileSystemProvider {
   root = new Directory("");
   deta = Deta(vscode.workspace.getConfiguration("detafs").get("detaKey"));
-  base = this.deta.Base("files");
+  drive = this.deta.Drive("files");
 
   async init() {
-    const { items: files } = await this.base.fetch();
+    const { names } = await this.drive.list();
 
-    files.map((file) => {
-      vscode.workspace.fs.writeFile(
-        vscode.Uri.parse(`detafs:/${file.path}`),
-        textEncoder.encode(file.data?.toString()),
-      );
+    names.map(async (name) => {
+      const content = await this.drive.get(name);
+
+      if (content) {
+        const buffer = await content.arrayBuffer();
+
+        vscode.workspace.fs.writeFile(
+          vscode.Uri.parse(`detafs:/${name}`),
+          new Uint8Array(buffer),
+        );
+      }
     });
   }
 
@@ -114,30 +120,17 @@ export class DetaFS implements vscode.FileSystemProvider {
     entry.data = content;
 
     const filePath = uri.path.split("/").slice(1).join("/");
-    const files = await this.base.fetch({ "path": filePath }, { limit: 1 });
-    const key = files.items[0]?.key;
 
-    if (key) {
-      this.base.update({
-        path: filePath,
-        data: textDecoder.decode(entry.data),
-        modifiedAt: entry.mtime,
-      }, key.toString());
-    } else {
-      this.base.put(
-        {
-          path: filePath,
-          data: textDecoder.decode(entry.data),
-          createdAt: entry.ctime,
-          modifiedAt: entry.mtime,
-        },
-      );
-    }
+    this.drive.put(filePath, {
+      data: textDecoder.decode(entry.data),
+    });
 
     this._fireSoon({ type: vscode.FileChangeType.Changed, uri });
   }
 
   // --- manage files/folders
+  // Renaming files is not possible according to Deta discord
+  // TODO: Figure out how to do this
 
   async rename(
     oldUri: vscode.Uri,
@@ -161,12 +154,19 @@ export class DetaFS implements vscode.FileSystemProvider {
     const oldPath = oldUri.path.split("/").slice(1).join("/");
     const newPath = newUri.path.split("/").slice(1).join("/");
 
-    const { items } = await this.base.fetch({ path: oldPath }, { limit: 1 });
-    const key = items[0]?.key;
+    const { names } = await this.drive.list({ prefix: oldPath });
 
-    if (key) {
-      this.base.update({ path: newPath }, key.toString());
-    }
+    names.map(async (name: string) => {
+      const content = await this.drive.get(name);
+
+      if (content) {
+        const buffer = await content.arrayBuffer();
+
+        this.drive.delete(oldPath);
+        // This doesn't work properly
+        this.drive.put(newPath, { data: new Uint8Array(buffer) });
+      }
+    });
 
     this._fireSoon(
       { type: vscode.FileChangeType.Deleted, uri: oldUri },
@@ -189,30 +189,16 @@ export class DetaFS implements vscode.FileSystemProvider {
 
     const filePath = uri.path.split("/").slice(1).join("/");
 
-    if (filePath.includes("/")) {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { items } = await this.base.fetch({ "path?pfx": filePath });
-      items.map(({ key }) => {
-        if (key) {
-          this.base.delete(key.toString());
-        }
-      });
-    } else {
-      const { items } = await this.base.fetch({ "path": filePath }, {
-        limit: 1,
-      });
+    const { names } = await this.drive.list({ prefix: filePath });
+    this.drive.deleteMany(names);
 
-      const key = items[0]?.key;
-
-      if (key) {
-        this.base.delete(key.toString());
-      }
-    }
-
-    this._fireSoon({ type: vscode.FileChangeType.Changed, uri: dirname }, {
-      uri,
-      type: vscode.FileChangeType.Deleted,
-    });
+    this._fireSoon(
+      { type: vscode.FileChangeType.Changed, uri: dirname },
+      {
+        uri,
+        type: vscode.FileChangeType.Deleted,
+      },
+    );
   }
 
   createDirectory(uri: vscode.Uri): void {
@@ -225,10 +211,13 @@ export class DetaFS implements vscode.FileSystemProvider {
     parent.mtime = Date.now();
     parent.size += 1;
 
-    this._fireSoon({ type: vscode.FileChangeType.Changed, uri: dirname }, {
-      type: vscode.FileChangeType.Created,
-      uri,
-    });
+    this._fireSoon(
+      { type: vscode.FileChangeType.Changed, uri: dirname },
+      {
+        type: vscode.FileChangeType.Created,
+        uri,
+      },
+    );
   }
 
   // --- lookup
