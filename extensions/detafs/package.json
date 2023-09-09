@@ -1,5 +1,6 @@
 {
   "name": "detafs",
+  "publisher": "cyber",
   "displayName": "detafs",
   "description": "Deta Drive filesystem",
   "version": "0.0.1",
