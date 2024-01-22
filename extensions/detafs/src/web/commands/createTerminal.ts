@@ -13,7 +13,10 @@ vscode.commands.registerCommand(
 
     const pty: vscode.Pseudoterminal = {
       onDidWrite: writeEmitter.event,
-      open: () => prompt(),
+      open: async () => {
+        await fetch("/terminal/sync", { method: "POST" });
+        prompt();
+      },
       close: () => {},
       handleInput: async (data: string) => {
         switch (data) {
@@ -25,7 +28,7 @@ vscode.commands.registerCommand(
             break;
           case "\r": // Enter
             if (line.trim().length) {
-              const result = await (await fetch("/terminal", {
+              const result = await (await fetch("/terminal/run", {
                 method: "POST",
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 headers: { "Content-Type": "application/json" },
