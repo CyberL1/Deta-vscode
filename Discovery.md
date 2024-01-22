@@ -1,7 +1,11 @@
 ---
-title: Visual Studio Code
+app_name: vscode
+title: "vscode: Visual Studio Code"
 tagline: Visual Studio Code meets deta space
 git: https://github.com/CyberL1/deta-vscode
+media: []
+ported_from: ""
+works_with: []
 ---
 
 ## How to setup
