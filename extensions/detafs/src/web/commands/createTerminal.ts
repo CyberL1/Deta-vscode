@@ -5,66 +5,61 @@ const writeEmitter = new vscode.EventEmitter<string>();
 vscode.commands.registerCommand(
   "detafs.createTerminal",
   async () => {
-    let line: string[] = [];
+    let line: string = "";
     let cwd: string = "/";
     let cursor: number = 0;
-    let prompt: string = `\x1b[1;34m${cwd}\x1b[0m $ `;
+
+    const prompt = () => writeEmitter.fire(`\x1b[1;34m${cwd}\x1b[0m $ `);
 
     const pty: vscode.Pseudoterminal = {
       onDidWrite: writeEmitter.event,
-      open: () => writeEmitter.fire(prompt),
+      open: () => prompt(),
       close: () => {},
       handleInput: async (data: string) => {
         switch (data) {
-          case "\x1b[A": // Up arrow
-          case "\x1b[B": // Down arrow
-          case "\t": // Tab key
-            break;
-          case "\x1b[3~": // Delete key
-            if (cursor < line.length) {
-              writeEmitter.fire("\x1b[P"); // Delete character
-              line.splice(cursor, 1);
-              break;
-            }
-          case "\x1b[C": // Right arrow
-            if (cursor < line.length) {
-              writeEmitter.fire(data);
-              cursor++;
-            }
-            break;
-          case "\x1b[D": // Left arrow
-            if (cursor > 0) {
-              writeEmitter.fire(data);
-              cursor--;
-            }
+          case "\u0003": // Ctrl+C
+            writeEmitter.fire("^C\r\n");
+            prompt();
+            line = "";
+            cursor = 0;
             break;
           case "\r": // Enter
-            const result = await (await fetch("/terminal", {
-              method: "POST",
-              // eslint-disable-next-line @typescript-eslint/naming-convention
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ line }),
-            })).json();
+            if (line.trim().length) {
+              const result = await (await fetch("/terminal", {
+                method: "POST",
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ line, cwd }),
+              })).json();
 
-            writeEmitter.fire(`\r\n${result}`);
-            line = [];
-            cursor = 0;
+              if (result.cwd !== cwd) {
+                cwd = result.cwd;
+              }
 
-            writeEmitter.fire(prompt);
+              writeEmitter.fire(`\r\n${result.stdout ?? result.stderr}`);
+              line = "";
+              cursor = 0;
+            } else {
+              writeEmitter.fire("\r\n");
+            }
+            prompt();
             break;
           case "\x7f": // Backspace
             if (cursor > 0) {
-              writeEmitter.fire("\x1b[D"); // Move cursor left
-              writeEmitter.fire("\x1b[P"); // Delete charatcher
+              writeEmitter.fire("\b \b");
+              if (line.length > 0) {
+                line = line.substring(0, line.length - 1);
+              }
               cursor--;
-              line.splice(cursor, 1);
             }
             break;
           default:
-            // TODO: Figure out why vscode replaces characters instead of insterting them
-            line.splice(cursor, 0, data);
-            writeEmitter.fire(data);
-            cursor++;
+            // Check if character is printable
+            if (data.charCodeAt(0) >= 32 && data.charCodeAt(0) <= 127) {
+              cursor++;
+              line += data;
+              writeEmitter.fire(data);
+            }
         }
       },
     };

@@ -6,19 +6,31 @@ const app = express();
 app.use(express.json());
 
 app.post("/", (req, res) => {
-  const command = req.body.line.join("");
+  const cwd = req.body.cwd;
+  const line = req.body.line.trim();
 
-  if (!command) return res.json("");
-  let result;
+    const args = line.split(" ");
+    const cmd = args.shift();
 
-  try {
-    result = execSync(command, { encoding: "ascii" });
-  } catch (e) {
-    result = e.stderr;
-  }
+    process.chdir(cwd)
+    const result = { cwd: process.cwd() }
+    
+    try {
+      if (cmd === "cd") {
+        try {
+          if (!args[0]) args[0] = process.env.HOME || "/";
 
-  result = result.toString().replaceAll("\n", "\r\n");
-  res.json(result);
+          process.chdir(args[0]);
+          result.cwd = process.cwd();
+        } catch {}
+      }
+
+    result.stdout = execSync(`${cmd} ${args.join(" ")}`, { encoding: "ascii" }).replaceAll("\n", "\r\n")
+} catch(e) {
+  result.stderr = e.stderr.replaceAll("\n", "\r\n")
+}
+
+  res.send(result);
 });
 
 app.listen(process.env.PORT);
