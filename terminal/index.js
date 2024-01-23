@@ -52,7 +52,7 @@ app.post("/run", (req, res) => {
         } catch {}
       }
 
-    result.stdout = execSync(`${cmd} ${args.join(" ")}`, { encoding: "ascii" }).replaceAll("\n", "\r\n")
+    result.stdout = execSync(`${cmd} ${args.join(" ")}`, { encoding: "ascii", cwd }).replaceAll("\n", "\r\n")
 } catch(e) {
   result.stderr = e.stderr.replaceAll("\n", "\r\n")
 }
