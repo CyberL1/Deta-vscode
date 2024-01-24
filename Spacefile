@@ -19,3 +19,8 @@ micros:
     path: /terminal
     engine: nodejs16
     dev: npm start
+    presets:
+      env:
+        - name: HOME
+          description: Don't change outside of /tmp
+          default: /tmp

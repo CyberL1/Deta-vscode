@@ -15,18 +15,18 @@ app.post("/sync", async (req, res) => {
   const { names } = await drive.list();
 
   names.map(async name => {
-    if (existsSync(`/tmp/${name}`)) {
-      rmSync(`/tmp/${name}`, { recursive: true });
+    if (existsSync(`${process.env.HOME}/${name}`)) {
+      rmSync(`${process.env.HOME}/${name}`, { recursive: true });
     }
 
     if (dirname(name) !== ".") {
-      mkdirSync(`/tmp/${dirname(name)}`, { recursive: true });
+      mkdirSync(`${process.env.HOME}/${dirname(name)}`, { recursive: true });
     }
 
     const content = await drive.get(name);
     const buffer = await content.arrayBuffer();
 
-    writeFileSync(`/tmp/${name}`, new Uint8Array(buffer));
+    writeFileSync(`${process.env.HOME}/${name}`, new Uint8Array(buffer));
 });
 
   res.send({ synced: true });
@@ -45,7 +45,7 @@ app.post("/run", (req, res) => {
     try {
       if (cmd === "cd") {
         try {
-          if (!args[0]) args[0] = process.env.HOME || "/";
+          if (!args[0]) args[0] = process.env.HOME;
 
           process.chdir(args[0]);
           result.cwd = process.cwd();
