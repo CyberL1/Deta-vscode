@@ -8,6 +8,7 @@ vscode.commands.registerCommand(
     let line: string = "";
     let cwd: string = "/";
     let cursor: number = 0;
+    let busy = false;
 
     const prompt = () => writeEmitter.fire(`\x1b[1;34m${cwd}\x1b[0m $ `);
 
@@ -19,6 +20,10 @@ vscode.commands.registerCommand(
       },
       close: () => {},
       handleInput: async (data: string) => {
+        if (busy) {
+          return;
+        }
+
         switch (data) {
           case "\u0003": // Ctrl+C
             writeEmitter.fire("^C\r\n");
@@ -28,20 +33,28 @@ vscode.commands.registerCommand(
             break;
           case "\r": // Enter
             if (line.trim().length) {
-              const result = await (await fetch("/terminal/run", {
-                method: "POST",
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ line, cwd }),
-              })).json();
+              busy = true;
 
-              if (result.cwd !== cwd) {
-                cwd = result.cwd;
+              try {
+                const result = await (await fetch("/terminal/run", {
+                  method: "POST",
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ line, cwd }),
+                })).json();
+
+                if (result.cwd !== cwd) {
+                  cwd = result.cwd;
+                }
+
+                writeEmitter.fire(`\r\n${result.stdout ?? result.stderr}`);
+              } catch {
+                writeEmitter.fire(`\r\nRequest failed.\r\n`);
               }
 
-              writeEmitter.fire(`\r\n${result.stdout ?? result.stderr}`);
               line = "";
               cursor = 0;
+              busy = false;
             } else {
               writeEmitter.fire("\r\n");
             }
